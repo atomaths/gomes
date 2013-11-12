@@ -10,8 +10,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/fcgi"
-	"os"
-	"path/filepath"
 )
 
 var (
@@ -20,6 +18,7 @@ var (
 		"application modules should bind (default: localhost)")
 	port = flag.Int("port", 8080, "lowest port to which application "+
 		"modules should bind (default: 8080)")
+	path = flag.String("path", "./", "path to serve files (default: ./)")
 )
 
 func main() {
@@ -33,12 +32,8 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = fcgi.Serve(l, http.FileServer(http.Dir(filepath.Join(os.Getenv("HOME"), "go", "doc"))))
-		if err != nil {
-			log.Fatal(err)
-		}
+		log.Fatal(fcgi.Serve(l, http.FileServer(http.Dir(*path))))
 	} else {
-		log.Fatal(http.ListenAndServe(addr,
-			http.FileServer(http.Dir(filepath.Join(os.Getenv("HOME"), "go", "doc")))))
+		log.Fatal(http.ListenAndServe(addr, http.FileServer(http.Dir(*path))))
 	}
 }
