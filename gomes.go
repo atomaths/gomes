@@ -7,17 +7,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	// "net"
+	"net"
 	"net/http"
-	// "net/http/fcgi"
+	"net/http/fcgi"
 	"os"
 	"path/filepath"
-	// "strconv"
 )
 
 var (
-	fcgi = flag.Bool("fcgi", false, "fcgi mode (default: false)")
-	host = flag.String("host", "localhost", "host name to which "+
+	fcgiMode = flag.Bool("fcgi", false, "fcgi mode (default: false)")
+	host     = flag.String("host", "localhost", "host name to which "+
 		"application modules should bind (default: localhost)")
 	port = flag.Int("port", 8080, "lowest port to which application "+
 		"modules should bind (default: 8080)")
@@ -29,8 +28,15 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	log.Printf("%s: Running...", addr)
 
-	if *fcgi {
-		log.Print("fcgi")
+	if *fcgiMode {
+		l, err := net.Listen("tcp", addr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = fcgi.Serve(l, http.FileServer(http.Dir(filepath.Join(os.Getenv("HOME"), "go", "doc"))))
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		log.Fatal(http.ListenAndServe(addr,
 			http.FileServer(http.Dir(filepath.Join(os.Getenv("HOME"), "go", "doc")))))
