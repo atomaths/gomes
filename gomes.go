@@ -1,13 +1,18 @@
 // Copyright 2013 Jongmin Kim. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-package gomes
+package main
 
 import (
 	"flag"
 	"fmt"
-	// "net/http"
+	"log"
+	// "net"
+	"net/http"
 	// "net/http/fcgi"
+	"os"
+	"path/filepath"
+	// "strconv"
 )
 
 var (
@@ -18,20 +23,16 @@ var (
 		"modules should bind (default: 8080)")
 )
 
-func init() {
+func main() {
 	flag.Parse()
-}
 
-type Server struct {
-	Host string
-}
+	addr := fmt.Sprintf("%s:%d", *host, *port)
+	log.Printf("%s: Running...", addr)
 
-func NewServer() *Server {
-	return &Server{
-		Host: "test..",
+	if *fcgi {
+		log.Print("fcgi")
+	} else {
+		log.Fatal(http.ListenAndServe(addr,
+			http.FileServer(http.Dir(filepath.Join(os.Getenv("HOME"), "go", "doc")))))
 	}
-}
-
-func (s *Server) Run() {
-	fmt.Println(s.Host)
 }
